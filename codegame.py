@@ -1,7 +1,7 @@
 from app import create_app, db ,socketio
 from app.models import User, Post
 
-app = create_app(debug=True)
+app = create_app()
 # cli.register(app)
 
 
