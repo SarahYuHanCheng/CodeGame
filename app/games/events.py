@@ -12,7 +12,6 @@ from .. import socketio
 
 @socketio.on('connectfromgame')
 def test_connect(message):
-    print(message['msg'])
     emit('gameobject', {'msg': message['msg']},room='q1')
 
 # @socketio.on('disconnect', namespace='/test')
@@ -23,6 +22,7 @@ def test_connect(message):
 def joined(message):
     """Sent by clients when they enter a room.
     A status message is broadcast to all people in the room."""
+ 
     room = session.get('room')
     join_room(room)
     emit('status', {'msg': session.get('name') + ' has entered the room.'}, room=room)

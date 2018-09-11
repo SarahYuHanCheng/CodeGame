@@ -76,7 +76,7 @@ def game_view(logId):
 		db.session.commit()
 		flash('Your code have been saved.')
 		current_code=code.id
-		ws = create_connection("ws://localhost:6005")
+		ws = create_connection("ws://ec2-34-217-100-121.us-west-2.compute.amazonaws.com:6005")
 		print("Sending 'Hello, World'...")
 		ws.send(json.dumps({'code':code.body,'room':room,'logId':logId,'userId':commit_form.user_id.data}))
 		print("Receiving...")
