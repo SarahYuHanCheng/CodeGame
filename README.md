@@ -3,7 +3,7 @@
 1. `virtualenv venv`
 2. `source ./venv/bin/activate`
 3. `pip install -r requirements.txt`
-4. `export FLASK_APP=Codegame.py`
+4. `export FLASK_APP=codegame.py`
 6. `flask db init`
 7. `flask db migrate`
 8. `flask db upgrade`
