@@ -4,7 +4,7 @@ import subprocess
 import time
 import json,sys
 global path
-path="games/easy/codes/"
+path="games/easy/codes/pingpong/"
 def new_client(client, server):
     msg1="Hey all, a new client has joined us"
     server.send_message(client,msg1)
@@ -43,13 +43,17 @@ def execute_queue(logId,room,user_id_list):
 	if logId :
 		#left first
 		proc1 = subprocess.Popen(
-			['python', '%s%d_%s.py'%(path,logId,user_id_list[0])],
+			# ['python', '%s%d_%s.py'%(path,logId,user_id_list[0])],
+			# stdout=subprocess.PIPE)
+			['python', '%sgamemain_tcp.py'%path],
 			stdout=subprocess.PIPE)
-		# proc2 = subprocess.Popen(
-		# 	['python', '%s%d_%s.py'%(path,logId,user_id)],
-		# 	stdout=subprocess.PIPE)	
+		time.sleep(0.3)
+		proc2 = subprocess.Popen(
+			['python', '%sp76051080_tcp.py'%path],
+			stdout=subprocess.PIPE)
 		proc3 = subprocess.Popen(
-			['python', '%spingpong.py'%path]+ roomname,
+			# ['python', '%spingpong.py'%path]+ roomname,
+			['python', '%sp76051080_tcp2.py'%path],
 			stdout=subprocess.PIPE)
 		out1, err1 = proc1.communicate()
 		if(err1 is not None):

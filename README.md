@@ -18,8 +18,6 @@
 6. `python server_test.py`and Running on http://127.0.0.1:6005/ (communicate with webserver)
 7. `python games/easy/codes/pingpong/gamemain.py`and Running on http://127.0.0.1:8000/
 		(communicate with players)
-8. `python games/easy/codes/pingpong/p76051080_tcp.py`
-9. `python games/easy/codes/pingpong/p76051080_tcp2.py`
 
 # Descript 
 ## Data flow
