@@ -31,3 +31,4 @@
 ### 玩家進入遊戲畫面、聊天室、~~遊戲訊息溝通~~
 1. 由 url: `http://localhost:5000/games` 輸入要進入的聊天室
 2. Webserver 透過 app/main/events.py 來接收 socket 訊息(聊天室和~~遊戲物件位置~~)
+gi
