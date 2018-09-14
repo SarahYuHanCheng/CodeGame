@@ -3,7 +3,7 @@ import threading,math, random
 from socketIO_client import SocketIO, LoggingNamespace
 
 
-bind_ip = '127.0.0.1'
+bind_ip = '140.116.82.229'
 bind_port = 8000
 
 
@@ -280,10 +280,10 @@ def serve_app():
 def timeout_check():
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
     
-    timeout=0.07
+    timeout=0.7
     while True:
         
-        time.sleep(0.03)
+        time.sleep(0.3)
         if start==1:
             # print("check")
             lock.acquire()
