@@ -1,13 +1,17 @@
 import socket , time, json
   
-address = ('127.0.0.1', 8000)  # 140.116.82.229
+address = ('140.116.82.229', 8000)  # 140.116.82.229
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-s.connect(address) 
-
+ 
+s_sucess=s.connect(address) 
+connecttoserver = s.recv(2048)
+print(connecttoserver)
+print(s_sucess)
 msg={'type':'connect','who':'P1','content':'in'}	
 str_ = json.dumps(msg)
 binary =str_.encode()
 s.send(binary) 
+
 
 ball_pos=[[0,0],[0,0],[0,0]]
 paddle1_pos=[0] # paddle only Y axis
@@ -26,14 +30,14 @@ def on_gameinfo(message):
 	# print(ball_pos)
 	
 	run()
-	communicate(cnt)
+	communicate(3)
 
 
 def run():
 	# global count
 	# count+=1
 	# if count>10:
-	# 	time.sleep(3)
+	time.sleep(30)
 		# count=0
 	global paddle_vel,ball_pos,move_unit
 	if (ball_pos[-1][0]-ball_pos[-2][0]) <0: 

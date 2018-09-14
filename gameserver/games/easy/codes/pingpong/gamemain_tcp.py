@@ -33,6 +33,7 @@ cnt=0
 p1_rt=0.0001
 p2_rt=0.0001
 start=0 # control timeout loop
+lock = threading.Lock()
 
 def ball_init(right):
     global ball, ball_vel
@@ -61,7 +62,8 @@ def __init__():
 
 def send_to_webserver():
     global ball,paddle1,paddle2
-    with SocketIO('localhost', 5000, LoggingNamespace) as socketIO:
+    print("sendtoweb")
+    with SocketIO('140.116.82.229', 5000, LoggingNamespace) as socketIO:
         socketIO.emit('connectfromgame',{'msg':tuple([ball,paddle1,paddle2])})
 
 
@@ -177,7 +179,7 @@ def play():
 
 def game(where):
     try:
-        # print(where)
+        print(where)
         play()
     except:
         return
@@ -198,41 +200,58 @@ def handle_client_connection(client_socket):
                 # print('P1 content',msg['content'])
                 paddle1_move=msg['content']
                 p1_rt=time.time()
-                barrier[0]=1
-                # print('p1 barrier',barrier)
-                if barrier[1]==1:
-                    send_to_webserver()
-                    game('on_p1')
+                lock.acquire()
+                try:
+                    barrier[0]=1
+                    if barrier[1]==1:
+                        send_to_webserver()
+                        game('on_p1')
+                finally:
+                    lock.release()
                     
             elif msg['who']=='P2':
                 # print('P2 content',msg['content'])
                 paddle2_move=msg['content']
                 p2_rt=time.time()
-                barrier[1]=1
-                # print('p2 barrier',barrier)
-                if barrier[0]==1:
-                    send_to_webserver()
-                    game('on_p2')
+                lock.acquire()
+                try:
+                    barrier[1]=1
+                    if barrier[0]==1:
+                        send_to_webserver()
+                        game('on_p2')
+                finally:
+                    lock.release()
+            
+                
                     
 
         elif msg['type']=='connect':
             
             if msg['who']=='P1':
                 print('P1 in',barrier)
-                barrier[0]=1
-
-                if barrier[1]==1:
-                	print("p1_start")
-                	start=1
-                	barrier=[0,0]
+                p1_rt=time.time()
+                lock.acquire()
+                try:
+                    barrier[0]=1
+                    if barrier[1]==1:
+                        print("p1_start")
+                        start=1
+                        send_to_Players("gameinfo")
+                finally:
+                    lock.release()
                 
             elif msg['who']=='P2':
                 print('P2 in',barrier)
-                barrier[1]=1
-                if barrier[0]==1:
-                	print("p1_start")
-                	start=1
-                	barrier=[0,0]
+                p2_rt=time.time()
+                lock.acquire()
+                try:
+                    barrier[1]=1
+                    if barrier[0]==1:
+                        print("p2_start")
+                        start=1
+                        send_to_Players("gameinfo")
+                finally:
+                    lock.release()
 
         elif msg['type']=='disconnect':
             if msg['who']=='P1':
@@ -259,47 +278,48 @@ def serve_app():
         client_handler.start()
 
 def timeout_check():
-    # print("call timeout")
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
-    # time.sleep(5)
-    timeout=0.1
+    
+    timeout=0.07
     while True:
         
-        time.sleep(0.06)
+        time.sleep(0.03)
         if start==1:
             # print("check")
-            if barrier[0]==0:
-                p1_rt_sub=time.time()-p1_rt
-                # print('p1_rt_sub %f p2_rt_sub %f, barrier '%(p1_rt_sub,time.time()-p2_rt)+str(barrier))
-                
-                if p1_rt_sub>timeout:
-                    if barrier[1]==0:
-                        timeout+=0.005    
-                        # print('p2 also no response, timeout increase: ',timeout)
-                    
-
-                    paddle1_move=0
-                    barrier=[1,1]
-                    p1_rt=time.time()
-                    p2_rt=time.time()
-                    send_to_webserver()
-                    game('p1_timeout')
-                    
+            lock.acquire()
+            try:
+                if barrier[0]==0:
+                    p1_rt_sub=time.time()-p1_rt
+                    # print('p1_rt_sub %f p2_rt_sub %f, barrier '%(p1_rt_sub,time.time()-p2_rt)+str(barrier))
+                    if p1_rt_sub>timeout:
+                        if barrier[1]==0:
+                            timeout+=0.005    
+                            # print('p2 also no response, timeout increase: ',timeout)
+                        paddle1_move=0
+                        barrier=[1,1]
+                        p1_rt=time.time()
+                        p2_rt=time.time()
+                        send_to_webserver()
+                        game('p1_timeout')
+                        
 
                     time.sleep(0.01)
                             
-            elif barrier[1]==0:
-                # print('p2_no')
-                if (time.time()-p2_rt)>timeout:
-                    # print('p2_rt',time.time()-p2_rt)
-                    paddle2_move=0
-                    barrier=[1,1]
-                    p1_rt=time.time()
-                    p2_rt=time.time()
-                    send_to_webserver()
-                    game('p2_timeout')
-                    
-                    time.sleep(0.01)
+                elif barrier[1]==0:
+                    # print('p2_no')
+                    if (time.time()-p2_rt)>timeout:
+                        # print('p2_rt',time.time()-p2_rt)
+                        paddle2_move=0
+                        barrier=[1,1]
+                        p1_rt=time.time()
+                        p2_rt=time.time()
+                        send_to_webserver()
+                        game('p2_timeout')
+                        
+                        time.sleep(0.01)
+            finally:
+                lock.release()
+            
 
 
 if __name__ == '__main__':
