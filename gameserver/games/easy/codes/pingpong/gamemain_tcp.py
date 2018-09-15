@@ -280,45 +280,42 @@ def serve_app():
 def timeout_check():
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
     
-    timeout=0.7
-    while True:
+    timeout=0.1
+    # while True:
         
-        time.sleep(0.3)
-        if start==1:
-            # print("check")
-            lock.acquire()
-            try:
-                if barrier[0]==0:
-                    p1_rt_sub=time.time()-p1_rt
-                    # print('p1_rt_sub %f p2_rt_sub %f, barrier '%(p1_rt_sub,time.time()-p2_rt)+str(barrier))
-                    if p1_rt_sub>timeout:
-                        if barrier[1]==0:
-                            timeout+=0.005    
-                            # print('p2 also no response, timeout increase: ',timeout)
-                        paddle1_move=0
-                        barrier=[1,1]
-                        p1_rt=time.time()
-                        p2_rt=time.time()
-                        send_to_webserver()
-                        game('p1_timeout')
-                        
-
-                    time.sleep(0.01)
-                            
-                elif barrier[1]==0:
-                    # print('p2_no')
-                    if (time.time()-p2_rt)>timeout:
-                        # print('p2_rt',time.time()-p2_rt)
-                        paddle2_move=0
-                        barrier=[1,1]
-                        p1_rt=time.time()
-                        p2_rt=time.time()
-                        send_to_webserver()
-                        game('p2_timeout')
-                        
-                        time.sleep(0.01)
-            finally:
-                lock.release()
+        # time.sleep(0.3)   
+    if start==1:
+        # print("check")
+        lock.acquire()
+        try:
+            if barrier[0]==0:
+                p1_rt_sub=time.time()-p1_rt
+                # print('p1_rt_sub %f p2_rt_sub %f, barrier '%(p1_rt_sub,time.time()-p2_rt)+str(barrier))
+                if p1_rt_sub>timeout:
+                    if barrier[1]==0:
+                        timeout+=0.005    
+                        # print('p2 also no response, timeout increase: ',timeout)
+                    paddle1_move=0
+                    barrier=[1,1]
+                    p1_rt=time.time()
+                    p2_rt=time.time()
+                    send_to_webserver()
+                    game('p1_timeout')
+                    
+    
+            elif barrier[1]==0:
+                # print('p2_no')
+                if (time.time()-p2_rt)>timeout:
+                    # print('p2_rt',time.time()-p2_rt)
+                    paddle2_move=0
+                    barrier=[1,1]
+                    p1_rt=time.time()
+                    p2_rt=time.time()
+                    send_to_webserver()
+                    game('p2_timeout')
+                    
+        finally:
+            lock.release()
             
 
 
@@ -328,9 +325,33 @@ if __name__ == '__main__':
     wst = threading.Thread(target=serve_app)
     wst.daemon = True
     wst.start()
-    # wst.join()
-    timeout= threading.Thread(target=timeout_check)
-    timeout.start()
+    wst.join()
+    # timeout= threading.Thread(target=timeout_check)
+    # timeout.start()
     # StartTime=time.time()/
     
 
+class setInterval :
+    def __init__(self,interval,action) :
+        self.interval=interval
+        self.action=action
+        self.stopEvent=threading.Event()
+        thread=threading.Thread(target=self.__setInterval)
+        thread.start()
+
+    def __setInterval(self) :
+        nextTime=time.time()+self.interval
+        while not self.stopEvent.wait(nextTime-time.time()) :
+            nextTime+=self.interval
+            self.action()
+
+    def cancel(self) :
+        self.stopEvent.set()
+
+# # start action every 0.6s
+inter=setInterval(0.03,timeout_check)
+print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
+
+# # will stop interval in 5s
+t=threading.Timer(90,inter.cancel)
+t.start()
