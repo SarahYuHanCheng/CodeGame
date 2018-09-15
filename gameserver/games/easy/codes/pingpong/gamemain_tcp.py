@@ -75,8 +75,7 @@ def send_to_Players(instr):
 
     if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
-        msg={'type':'info','ball':ball,'paddle1':paddle1[1],'paddle2':paddle2[1],'cnt':cnt}
-        
+        msg={'type':'info','content':tuple([ball,paddle1[1],paddle2[1],cnt])}
         for cli in range(0,len(playerlist)):
             playerlist[cli].send(json.dumps(msg).encode())
         barrier=[0,0]
